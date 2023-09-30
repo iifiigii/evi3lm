@@ -3,7 +3,7 @@ Just like the threat posed by phishing WIFI, there are also risks associated wit
 
 ## TODO
 
-- [ ] Web Page
+- [x] Web Page
 - [ ] Sensitive Information Collection
 - [ ] XSS/CSRF
 - [ ] Golang Supply Chain
