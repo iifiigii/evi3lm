@@ -1,7 +1,7 @@
 package main
 
 import (
-	"evalllm/llm"
+	"evilllm/llm"
 	"github.com/iifiigii/gin"
 	"net/http"
 )

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/iifiigii/gin"
+	"github.com/joho/godotenv"
 	"io"
 	"log"
 	"net/http"
@@ -23,9 +24,9 @@ type Dialog struct {
 }
 
 type Input struct {
-	Prompt  string     `json:"prompt,omitempty"`  // 使用指针表示 Prompt 字段可以为空
-	History *[]Dialog  `json:"history,omitempty"` // 使用指针表示 History 字段可以为空
-	Message *[]Message `json:"messages"`
+	Prompt  string                   `json:"prompt,omitempty"`  // 使用指针表示 Prompt 字段可以为空
+	History *[]Dialog                `json:"history,omitempty"` // 使用指针表示 History 字段可以为空
+	Message *[]ChatCompletionMessage `json:"messages"`
 }
 
 type Params struct {
@@ -57,13 +58,14 @@ type Response struct {
 	Id     string `json:"request_id"`
 }
 
-func Generagte(c *gin.Context) Response {
+func Generagte(c *gin.Context, message *[]ChatCompletionMessage) ChatCompletionChoice {
+	envFile, _ := godotenv.Read(".env")
+	alikey = envFile["QWEN_API_KEY"]
 	url := "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation" // 这里应填写真实的URL
-	message := []Message{{Role: "system", Content: "请用英文回答问题！"}, {Role: "user", Content: "麦当劳好吃吗"}}
-	resFormat := "message"
+	resFormat := "text"
 	reqBody := RequestBody{
 		Model:  "qwen-14b-chat",
-		Input:  &Input{Message: &message},
+		Input:  &Input{Message: message},
 		Params: &Params{ResFormat: &resFormat},
 	}
 	jsonValue, _ := json.Marshal(reqBody)
@@ -85,5 +87,13 @@ func Generagte(c *gin.Context) Response {
 	if err != nil {
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
-	return result
+	resultChoice := ChatCompletionChoice{
+		Index:        0,
+		FinishReason: result.Output.FinishReason,
+		Message: ChatCompletionMessage{
+			Role:    "assistant",
+			Content: result.Output.Text,
+		},
+	}
+	return resultChoice
 }
